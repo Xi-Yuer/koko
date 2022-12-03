@@ -1,5 +1,7 @@
 require('module-alias/register') // 配置别名
 
+
+const { APP_PORT, APP_HOST } = require("@config/const")
 const Koa = require('koa')
 const bodyparser = require('koa-bodyparser')
 const cors = require('koa2-cors')
@@ -7,6 +9,8 @@ const cors = require('koa2-cors')
 const Router = require('@router/index')
 
 const app = new Koa()
+require('@config/const')
+
 
 
 // 中间件
@@ -25,8 +29,8 @@ RouterArray.forEach((RouteItem) => {
 });
 
 
-app.listen(10008, () => {
-    console.log('Server Live Run http://localhost:10008');
+app.listen(APP_PORT, () => {
+    console.log(`Server Live Run:${APP_HOST}:${APP_PORT}`);
 })
 
 

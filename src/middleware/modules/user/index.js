@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-const { privateKey } = require('@config/jwt')
+const { PRIVATE_KEY } = require('@config/const')
 
 //  token 是否正确
 const isAuth = async (ctx, next) => {
@@ -7,7 +7,7 @@ const isAuth = async (ctx, next) => {
     const authorization = ctx.headers.authorization
     const token = authorization?.replace('Bearer ', '')
     try {
-        const result = jwt.verify(token, privateKey)
+        const result = jwt.verify(token, PRIVATE_KEY)
         ctx.user = result
         try {
             await next()
@@ -30,7 +30,14 @@ const isMe = async (ctx, next) => {
     const { id: tokenID, is_admin } = ctx.user
     const { id: qureyID } = ctx.request.body
     if (tokenID == qureyID || is_admin == 1) {
-        return await next()
+        try {
+            return await next()
+        } catch (error) {
+            ctx.body = {
+                status: 401,
+                message: "isMe:下游路由出现问题"
+            }
+        }
     } else {
         ctx.body = {
             status: 401,
@@ -45,7 +52,7 @@ const isAdmin = async (ctx, next) => {
     const authorization = ctx.headers.authorization
     const token = authorization?.replace('Bearer ', '')
     try {
-        const result = jwt.verify(token, privateKey)
+        const result = jwt.verify(token, PRIVATE_KEY)
         if (result.is_admin == 1) {
             try {
                 return await next()

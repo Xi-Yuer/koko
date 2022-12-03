@@ -1,12 +1,18 @@
 const md5 = require('md5');
 const jwt = require("jsonwebtoken")
+const fs = require("fs")
 
-const { privateKey, expiresIn } = require('@config/jwt')
+const { PRIVATE_KEY, EXPIRESIN } = require('@config/const')
 const { query } = require("@db/index")
 const snid = require('@utils/snowflake')
 const isPhoneNumber = require('@utils/isPhoneNumber')
 const isCorrectPassword = require('@utils/isCorrectPassword')
+const deletFile = require("@utils/deletFile")
 
+const { APP_HOST, APP_PORT, AVATAR_PATH } = require('@config/const')
+const path = require('path');
+
+// 获取所有用户,管理员才能获取
 const getAllUser = async ctx => {
     const sql = "SELECT * FROM users"
     await query(sql).then(res => {
@@ -14,6 +20,27 @@ const getAllUser = async ctx => {
     })
 }
 
+// 获取用户信息
+const getUserInfoById = async ctx => {
+    const { id } = ctx.params
+    const sql = "SELECT id, name, phone_number, avatar, gender, asign, is_admin, birthday, is_vip FROM users WHERE id = ?"
+    await query(sql, [id]).then(res => {
+        if (res.length > 0) {
+            ctx.body = {
+                status: 200,
+                message: "ok",
+                data: res[0]
+            }
+        } else {
+            ctx.body = {
+                status: 200,
+                message: "用户不存在"
+            }
+        }
+    })
+}
+
+// 用户注册
 const userRegister = async (ctx, next) => {
     // 生成一个随机名字充当默认值
     const radomName = Math.random().toString(36).slice(-8);
@@ -64,6 +91,7 @@ const userRegister = async (ctx, next) => {
     }
 }
 
+// 用户登录
 const userLogin = async (ctx, next) => {
     const { phone, password } = ctx.request.body
     if (!phone || !password) {
@@ -77,7 +105,7 @@ const userLogin = async (ctx, next) => {
             if (res && res.password == md5(password)) {
                 // 将用户敏感数据和不必要的数据去除掉生成 token
                 const filterUserInfo = { ...res, password: "", avatar: "", asign: "" }
-                const token = jwt.sign(filterUserInfo, privateKey, { expiresIn: expiresIn }, { algorithm: 'RS256' })
+                const token = jwt.sign(filterUserInfo, PRIVATE_KEY, { expiresIn: EXPIRESIN }, { algorithm: 'RS256' })
                 ctx.body = {
                     status: 200,
                     token: token,
@@ -93,6 +121,7 @@ const userLogin = async (ctx, next) => {
     }
 }
 
+// 更新用户信息
 const updateUserInfo = async (ctx) => {
     const qureyUserInfo = ctx.request.body
 
@@ -142,6 +171,7 @@ const updateUserInfo = async (ctx) => {
     }
 }
 
+// 删除用户
 const deleteUser = async (ctx) => {
     const { id } = ctx.request.query
 
@@ -174,10 +204,54 @@ const deleteUser = async (ctx) => {
 
 }
 
+// 更新用户头像
+const updateUserAvatar = async (ctx, next) => {
+    // 获取上传的头像信息。
+    const { filename } = ctx.req.file;
+    const userId = ctx.user.id;
+
+    // 更新用户头像字段信息
+    const find = "SELECT * FROM users WHERE id = ?"
+    await query(find, [userId]).then(async ([{ avatar }]) => {
+        const fileName = (avatar.split(`${APP_HOST}:${APP_PORT}/user/avatar/`))[1]
+        if (fileName) {
+            const deletePath = path.join(__dirname, "../../../../img/avatar", fileName)
+            await deletFile(deletePath)
+        }
+    })
+
+    const sql = "UPDATE users SET avatar = ? WHERE id = ?"
+    const avatarUrl = `${APP_HOST}:${APP_PORT}/user/avatar/${filename}`
+    await query(sql, [avatarUrl, userId]).then(async res => {
+        if (res.affectedRows > 0) {
+            // 删除本地文件
+            ctx.body = {
+                status: 200,
+                message: "修改成功"
+            }
+        } else {
+            ctx.body = {
+                status: 500,
+                message: "修改失败"
+            }
+        }
+    })
+}
+
+// 获取图片信息流
+const getSingeAvatar = (ctx, next) => {
+    let { filename } = ctx.params
+    ctx.response.set('content-type', 'image/jpeg')
+    ctx.body = fs.createReadStream(`${AVATAR_PATH}/${filename}`)
+}
+
 module.exports = {
     getAllUser,
+    getUserInfoById,
     userRegister,
     userLogin,
     updateUserInfo,
-    deleteUser
+    deleteUser,
+    updateUserAvatar,
+    getSingeAvatar
 }

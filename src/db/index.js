@@ -1,10 +1,11 @@
 const mysql = require('mysql2');
+const { MYSQL_HOST, MYSQL_PORT, MYSQL_PASSWORD, MYSQL_ROOT, MYSQL_DATABASE } = require("@config/const")
 let config = {
-    host: '112.124.28.77',
-    user: 'root',
-    password: '2214380963Wx',
-    database: 'koko',
-    port: 3306,
+    host: MYSQL_HOST,
+    user: MYSQL_ROOT,
+    password: MYSQL_PASSWORD,
+    database: MYSQL_DATABASE,
+    port: MYSQL_PORT,
     multipleStatements: true//允许多条sql同时执行
 };
 let pool = mysql.createPool(config);
