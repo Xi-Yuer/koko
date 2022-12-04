@@ -51,9 +51,17 @@ const deleteProduct = async (ctx) => {
         return
     }
     // 根据商品id查找到该商品
-    const find = "SELECT userId FROM products WHERE id = ?"
+    const find = "SELECT * FROM products WHERE id = ?"
     await query(find, [ProductID]).then(async (res) => {
         const userId = res[0]?.userId
+        const picture = res[0]?.picture
+        if (picture) {
+            const fileName = (picture.split(`${APP_HOST}:${APP_PORT}/product/`))[1]
+            if (fileName) {
+                const deletePath = path.join(__dirname, "../../../../img/product", fileName)
+                await deletFile(deletePath)
+            }
+        }
         if (userId === undefined) {
             ctx.body = {
                 status: 404,
