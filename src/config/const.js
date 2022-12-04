@@ -10,6 +10,7 @@ module.exports = {
     MYSQL_PASSWORD,
     AVATAR_PATH,
     BANNER_PATH,
+    PRODUCT_PATH,
     PRIVATE_KEY,
     EXPIRESIN
 } = process.env
