@@ -11,6 +11,7 @@ module.exports = {
     AVATAR_PATH,
     BANNER_PATH,
     PRODUCT_PATH,
+    MENNU_PATH,
     PRIVATE_KEY,
     EXPIRESIN,
     AccessKeyID,
