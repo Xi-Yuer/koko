@@ -12,5 +12,7 @@ module.exports = {
     BANNER_PATH,
     PRODUCT_PATH,
     PRIVATE_KEY,
-    EXPIRESIN
+    EXPIRESIN,
+    AccessKeyID,
+    AccessKeySecret
 } = process.env

@@ -1,4 +1,5 @@
 const { query } = require("@db/index")
+const postMessage = require("@utils/message")
 
 const snid = require("@utils/snowflake")
 
@@ -7,7 +8,7 @@ const createOrder = async ctx => {
     const { id: userId } = ctx.user // 用户id
     const { product_id, realname, address, mobile, amount, note, total_price } = ctx.request.body // 订单信息
     const orderId = snid.generate() // 订单id
-    const odrderStatus = 0 // 订单状态
+    const odrderStatus = 1 // 订单状态
 
     // 用户提交订单信息
     const sql = "INSERT INTO `order` (id, user_id, product_id, realname,address, mobile,amount, note,total_price,order_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
@@ -26,12 +27,20 @@ const createOrder = async ctx => {
 
 }
 
-// 支付订单
+// 修改订单状态
 const payOrder = async ctx => {
-    const { orderId } = ctx.request.body
-    const sql = "UPDATE `order` SET order_status = 1 WHERE id = ?;"
 
-    // TOOD(订单已支付)
+    // 订单状态
+    /**
+     *  1：未支付
+     *  2：已支付
+     *  3：运输中
+     *  4：已签收
+     */
+    const { orderId, orderStatus = 1 } = ctx.request.body
+    const sql = "UPDATE `order` SET order_status = ? WHERE id = ?;"
+
+    // TOOD(订单已支付 orderStatus = 2)
 
     if (!ctx.user) {
         ctx.body = {
@@ -41,10 +50,16 @@ const payOrder = async ctx => {
         return
     }
 
-    await query(sql, [orderId]).then(res => {
+    await query(sql, [orderStatus, orderId]).then(async res => {
+
+        // 发送短信
+        // TOOD(订单支付成功，发送短信通知商家发货)
+        if (orderStatus == 2) {
+            await postMessage("18483128820")
+        }
         ctx.body = {
             status: 200,
-            message: "支付成功"
+            message: "订单状态已修改"
         }
     }).catch(err => {
         ctx.body = {
@@ -55,8 +70,73 @@ const payOrder = async ctx => {
     })
 }
 
+// 获取某个用户的订单(用户)
+const userOrder = async ctx => {
+    const { id } = ctx.user
+    if (!id) {
+        ctx.body = {
+            status: 401,
+            message: "请先登录"
+        }
+    } else {
+        const sql = "SELECT * FROM `order` WHERE user_id = ?;"
+        await query(sql, [id]).then(res => {
+            ctx.body = {
+                status: 200,
+                message: "ok",
+                data: res
+            }
+        }).catch(err => {
+            ctx.body = {
+                status: 500,
+                menubar: err
+            }
+        })
+    }
+}
 
+// 获取所有订单(管理员使用根据传值)
+const OrderList = async ctx => {
+    const { orderStatus, userId } = ctx.request.body
+
+    let sql
+    let queryArr
+    // 当查询某个用户查询某个状态下的订单
+    if (orderStatus && userId) {
+        sql = "SELECT * FROM `order` WHERE user_id = ? AND order_status = ?"
+        queryArr = [userId, orderStatus]
+    }
+    // 有状态,没有用户id就是根据句订单状态查询所有订单
+    if (orderStatus && !userId) {
+        sql = "SELECT * FROM `order` WHERE  order_status= ?"
+        queryArr = [orderStatus]
+    }
+    // 有用户id 没有状态就是查询用户全部订单
+    if (!orderStatus && userId) {
+        sql = "SELECT * FROM `order` WHERE user_id = ?"
+        queryArr = [userId]
+    }
+    if(!orderStatus && !userId) {
+        sql = "SELECT *FROM `order`"
+    }
+    console.log(sql)
+    await query(sql, queryArr).then(res => {
+        ctx.body = {
+            status: 200,
+            message: "ok",
+            data: res
+        }
+    }).catch(err => {
+        ctx.body = {
+            status: 500,
+            message: err
+        }
+    })
+
+}
 module.exports = {
     createOrder,
-    payOrder
+    payOrder,
+    userOrder,
+    OrderList
 }
