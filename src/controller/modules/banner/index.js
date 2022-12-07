@@ -38,7 +38,7 @@ const getBanners = async (ctx, next) => {
             res.forEach(i => {
                 result.push({
                     ...i,
-                    imgUrl: `${APP_HOST}:${APP_PORT}/banners/${i.filename}`
+                    imgUrl: `${APP_HOST}/banners/${i.filename}`
                 })
             })
             ctx.body = {

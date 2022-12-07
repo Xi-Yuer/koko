@@ -18,7 +18,7 @@ const createProduct = async (ctx, next) => {
 
     const productId = snid.generate()
     const userId = ctx.user.id // 谁添加的商品（拥有者）
-    const previewImgUrl = `${APP_HOST}:${APP_PORT}/product/${filename}`
+    const previewImgUrl = `${APP_HOST}/product/${filename}`
     await query(sql, [productId, userId, product_name, price, old_price, description, previewImgUrl, product_address, stock, stock_unit, publice_status]).then(res => {
         ctx.body = {
             status: 200,
@@ -56,7 +56,7 @@ const deleteProduct = async (ctx) => {
         const userId = res[0]?.userId
         const picture = res[0]?.picture
         if (picture) {
-            const fileName = (picture.split(`${APP_HOST}:${APP_PORT}/product/`))[1]
+            const fileName = (picture.split(`${APP_HOST}/product/`))[1]
             if (fileName) {
                 const deletePath = path.join(__dirname, "../../../../img/product", fileName)
                 await deletFile(deletePath)
@@ -93,13 +93,13 @@ const updateProduct = async ctx => {
     const productInfo = ctx.req.body
     // // 商品预览图
     const { filename } = ctx.req.file
-    productInfo.picture = `${APP_HOST}:${APP_PORT}/product/${filename}`
+    productInfo.picture = `${APP_HOST}/product/${filename}`
 
     // 删除本地图片
     if (filename) {
         const find = "SELECT * FROM products WHERE id = ?"
         await query(find, [id]).then(async ([{ picture }]) => {
-            const fileName = (picture.split(`${APP_HOST}:${APP_PORT}/product/`))[1]
+            const fileName = (picture.split(`${APP_HOST}/product/`))[1]
             if (fileName) {
                 const deletePath = path.join(__dirname, "../../../../img/product", fileName)
                 await deletFile(deletePath)
@@ -151,7 +151,7 @@ const createProductBanner = async (ctx, next) => {
     }
     files.forEach(async file => {
         const { filename } = file
-        const picUrl = `${APP_HOST}:${APP_PORT}/product/${filename}`
+        const picUrl = `${APP_HOST}/product/${filename}`
         await createBannderImg(productId, picUrl, title)
     })
     ctx.body = {
@@ -182,7 +182,7 @@ const delProductImg = async (ctx, next) => {
 
             const [{ pic_url }] = res
 
-            const fileName = (pic_url.split(`${APP_HOST}:${APP_PORT}/product/`))[1]
+            const fileName = (pic_url.split(`${APP_HOST}/product/`))[1]
 
             if (fileName) {
                 const deletePath = path.join(__dirname, "../../../../img/product", fileName)

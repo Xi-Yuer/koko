@@ -213,7 +213,7 @@ const updateUserAvatar = async (ctx, next) => {
     // 更新用户头像字段信息
     const find = "SELECT * FROM users WHERE id = ?"
     await query(find, [userId]).then(async ([{ avatar }]) => {
-        const fileName = (avatar.split(`${APP_HOST}:${APP_PORT}/user/avatar/`))[1]
+        const fileName = (avatar.split(`${APP_HOST}/user/avatar/`))[1]
         if (fileName) {
             const deletePath = path.join(__dirname, "../../../../img/avatar", fileName)
             await deletFile(deletePath)
@@ -221,7 +221,7 @@ const updateUserAvatar = async (ctx, next) => {
     })
 
     const sql = "UPDATE users SET avatar = ? WHERE id = ?"
-    const avatarUrl = `${APP_HOST}:${APP_PORT}/user/avatar/${filename}`
+    const avatarUrl = `${APP_HOST}/user/avatar/${filename}`
     await query(sql, [avatarUrl, userId]).then(async res => {
         if (res.affectedRows > 0) {
             // 删除本地文件
