@@ -1,5 +1,5 @@
 const isCorrectPassword = (str) => {
-    const reg = /^(\w){6,18}$/
+    const reg = /^(\w){5,19}$/
     return reg.test(str)
 }
 
