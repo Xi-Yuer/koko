@@ -21,12 +21,16 @@ const productBannerHandler = productBannerUpload.array("banner", 10)
 
 // 单张菜品预览图
 const menuUpload = Multer({ dest: MENNU_PATH })
-const menuImgHandler = menuUpload.single("menuImg")
+const menuImgHandler = menuUpload.single("picture")
+
+// 多张菜品轮播图
+const menuBannerHandler = menuUpload.array("banner", 10)
 
 module.exports = {
     bannerHandler,
     avatarHandler,
     productImgHandler,
     productBannerHandler,
-    menuImgHandler
+    menuImgHandler,
+    menuBannerHandler
 }

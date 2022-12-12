@@ -91,12 +91,13 @@ const updateProduct = async ctx => {
     // 商品名称，价格，原价，商品描述，生产地址，库存，库存单位，上架状态
     const { id } = ctx.req.body
     const productInfo = ctx.req.body
-    // // 商品预览图
-    const { filename } = ctx.req.file
-    productInfo.picture = `${APP_HOST}/product/${filename}`
+
+    // 商品预览图
+    const filename = ctx.req?.file?.filename
 
     // 删除本地图片
     if (filename) {
+        productInfo.picture = `${APP_HOST}/product/${filename}`
         const find = "SELECT * FROM products WHERE id = ?"
         await query(find, [id]).then(async ([{ picture }]) => {
             const fileName = (picture.split(`${APP_HOST}/product/`))[1]
@@ -120,6 +121,11 @@ const updateProduct = async ctx => {
         ctx.body = {
             status: 200,
             message: "修改成功"
+        }
+    }).catch(err => {
+        ctx.body = {
+            status: 500,
+            message: err
         }
     })
 
