@@ -1,24 +1,25 @@
 const Router = require('koa-router')
 
 const {
-    menuImgHandler,
-    menuBannerHandler,
+  menuImgHandler,
+  menuBannerHandler,
 } = require('@middleware/modules/file/index')
 const { isAuth, isAdmin } = require('@middleware/modules/user/index')
 
 const {
-    createMenu,
-    previewMenuImg,
-    deleteMenu,
-    updateMenu,
-    getMenuList,
-    createMenuBanner,
-    getMenuByID,
-    delMenuImg,
+  createMenu,
+  previewMenuImg,
+  deleteMenu,
+  updateMenu,
+  getMenuList,
+  createMenuBanner,
+  getMenuByID,
+  delMenuImg,
+  getBannerList,
 } = require('@controller/modules/menu/index')
 
 const MenuRouter = new Router({
-    prefix: '/menu',
+  prefix: '/menu',
 })
 
 // 新建菜品（id, 名字，价格，图片轮播，描述，状态，商品原料，口味，制作方式，折扣）
@@ -44,5 +45,7 @@ MenuRouter.get('/menuInfo/:id', getMenuByID)
 
 // 获取菜品图片信息流
 MenuRouter.get('/:filename', previewMenuImg)
+
+MenuRouter.get('/banner/list', getBannerList)
 
 module.exports = MenuRouter

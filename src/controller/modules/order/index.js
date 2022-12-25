@@ -119,7 +119,6 @@ const OrderList = async ctx => {
     if(!orderStatus && !userId) {
         sql = "SELECT *FROM `order`"
     }
-    console.log(sql)
     await query(sql, queryArr).then(res => {
         ctx.body = {
             status: 200,
