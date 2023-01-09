@@ -14,7 +14,7 @@ const {
   delProductImg,
   getAllProduct,
   getProductByID,
-  getBannerList
+  getBannerList,
 } = require('@controller/modules/product/index')
 
 const ProductRouter = new Router({

@@ -1,6 +1,8 @@
 const md5 = require('md5')
 const jwt = require('jsonwebtoken')
 const fs = require('fs')
+const path = require('path')
+const axios = require('axios')
 
 const { PRIVATE_KEY, EXPIRESIN } = require('@config/const')
 const { query } = require('@db/index')
@@ -10,7 +12,7 @@ const isCorrectPassword = require('@utils/isCorrectPassword')
 const deletFile = require('@utils/deletFile')
 
 const { APP_HOST, APP_PORT, AVATAR_PATH } = require('@config/const')
-const path = require('path')
+
 
 // 获取所有用户,管理员才能获取
 const getAllUser = async ctx => {
@@ -258,6 +260,76 @@ const getSingeAvatar = (ctx, next) => {
   ctx.body = fs.createReadStream(`${AVATAR_PATH}/${filename}`)
 }
 
+const wxLogin = async ctx => {
+  const { phoneCode, openidCode } = ctx.request.body
+  const OpenIdResult = await axios.get(`
+  https://api.weixin.qq.com/sns/jscode2session?appid=wx8546360f9d778974&secret=2bf8796db92a215598e817ae28afc3e1&js_code=${openidCode}&grant_type=authorization_code`)
+
+  const AccessTokenResult = await axios.get(`
+  https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx8546360f9d778974&secret=2bf8796db92a215598e817ae28afc3e1`)
+
+  const PhoneResult = await axios.post(`
+  https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${AccessTokenResult.data.access_token}`,
+    {
+      code: phoneCode
+    })
+
+  const openid = OpenIdResult.data.openid
+  const phone = PhoneResult.data.phone_info.phoneNumber
+
+  const find = 'select * from users where phone_number = ?'
+
+  await query(find, [phone]).then(async res => {
+    if (res.length > 0) {
+      const sql = 'select * from users where phone_number = ?'
+      await query(sql, phone).then(([res]) => {
+        // 将用户敏感数据和不必要的数据去除掉生成 token
+        const filterUserInfo = { ...res, password: '', avatar: '', asign: '' }
+        const token = jwt.sign(
+          filterUserInfo,
+          PRIVATE_KEY,
+          { expiresIn: EXPIRESIN },
+          { algorithm: 'RS256' }
+        )
+        ctx.body = {
+          status: '200',
+          token: token,
+          data: { ...res, password: '' },
+          message: '登录成功,欢迎回来！',
+        }
+      })
+    } else {
+      const sql =
+        'INSERT INTO users (id, phone_number, password, name, gender) VALUES (?,?,?,?,?)'
+      // 生成唯一id
+      const id = snid.generate()
+      const radomName = Math.random().toString(36).slice(-8)
+      await query(sql, [id, phone, md5(openid), radomName, 0]).then(async res => {
+        if (res.affectedRows) {
+          const sql = 'select * from users where phone_number = ?'
+          await query(sql, phone).then(([res]) => {
+            // 将用户敏感数据和不必要的数据去除掉生成 token
+            const filterUserInfo = { ...res, password: '', avatar: '', asign: '' }
+            const token = jwt.sign(
+              filterUserInfo,
+              PRIVATE_KEY,
+              { expiresIn: EXPIRESIN },
+              { algorithm: 'RS256' }
+            )
+            ctx.body = {
+              status: '200',
+              token: token,
+              data: { ...res, password: '' },
+              message: '登录成功,欢迎回来！',
+            }
+          })
+        }
+      })
+    }
+  })
+
+
+}
 module.exports = {
   getAllUser,
   getUserInfoById,
@@ -267,4 +339,5 @@ module.exports = {
   deleteUser,
   updateUserAvatar,
   getSingeAvatar,
+  wxLogin
 }

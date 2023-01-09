@@ -1,6 +1,7 @@
 const Router = require("koa-router")
 
 const {
+    wxLogin,
     getAllUser,
     getUserInfoById,
     userRegister,
@@ -18,6 +19,9 @@ const UserRouter = new Router({
     prefix: "/user",
 
 })
+
+// 微信登录
+UserRouter.post("/Login",wxLogin)
 
 // 获取所有的用户
 UserRouter.get("/getAllUsers", isAdmin, getAllUser)
