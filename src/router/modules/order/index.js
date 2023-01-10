@@ -2,7 +2,7 @@ const Router = require("koa-router")
 
 const { isAuth, isAdmin } = require("@middleware/modules/user/index")
 
-const { createOrder, payOrder, userOrder, OrderList,IntoCar } = require("@controller/modules/order/index")
+const { createOrder, payOrder, userOrder, OrderList, IntoCar, getCarOrder } = require("@controller/modules/order/index")
 
 const OrderRouter = new Router({
     prefix: "/order"
@@ -24,6 +24,9 @@ OrderRouter.get("/all", isAdmin, OrderList)
 
 // 加入购物车
 OrderRouter.post("/intoCar", isAuth, IntoCar)
+
+// 获取用户购物车订单
+OrderRouter.get('/car', isAuth, getCarOrder)
 
 
 

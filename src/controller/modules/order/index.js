@@ -97,9 +97,49 @@ const userOrder = async ctx => {
 
 // 加入购物车
 const IntoCar = async (ctx) => {
-    const { price,count,id } = ctx.request.body
-    // const 
-    console.log(price,count,id)
+    const { price, count, productID } = ctx.request.body
+    const { id } = ctx.user
+    const orderId = snid.generate() // 订单id
+    const find = "SELECT * FROM products WHERE id = ?"
+    await query(find, [productID]).then(async ([product]) => {
+        const productResult = JSON.stringify(product)
+        const sql = "INSERT INTO shopping_car (id,user_id,price,count,product) VALUES (?,?,?,?,?)"
+        await query(sql, [orderId, id, price, count, productResult]).then(res => {
+            ctx.body = {
+                status: 200,
+                message: "加入购物车成功"
+            }
+        }).catch(err => {
+            ctx.body = {
+                status: 500,
+                message: err
+            }
+        })
+    })
+}
+
+// 获取用户购物车里的订单
+const getCarOrder = async ctx => {
+    const { id } = ctx.user
+    const sql = "SELECT * FROM shopping_car WHERE user_id = ?"
+    await query(sql, [id]).then(res => {
+        const result = res.map(i => {
+            return {
+                ...i,
+                product:JSON.parse(i.product)
+            }
+        })
+        ctx.body = {
+            status: 200,
+            message: "ok",
+            data: result
+        }
+    }).catch(err => {
+        ctx.body = {
+            status: 500,
+            message: err
+        }
+    })
 }
 
 // 获取所有订单(管理员使用根据传值)
@@ -123,7 +163,7 @@ const OrderList = async ctx => {
         sql = "SELECT * FROM `order` WHERE user_id = ?"
         queryArr = [userId]
     }
-    if(!orderStatus && !userId) {
+    if (!orderStatus && !userId) {
         sql = "SELECT *FROM `order`"
     }
     await query(sql, queryArr).then(res => {
@@ -145,5 +185,6 @@ module.exports = {
     payOrder,
     userOrder,
     OrderList,
-    IntoCar
+    IntoCar,
+    getCarOrder
 }
