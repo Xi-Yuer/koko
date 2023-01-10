@@ -95,6 +95,13 @@ const userOrder = async ctx => {
     }
 }
 
+// 加入购物车
+const IntoCar = async (ctx) => {
+    const { price,count,id } = ctx.request.body
+    // const 
+    console.log(price,count,id)
+}
+
 // 获取所有订单(管理员使用根据传值)
 const OrderList = async ctx => {
     const { orderStatus, userId } = ctx.request.body
@@ -137,5 +144,6 @@ module.exports = {
     createOrder,
     payOrder,
     userOrder,
-    OrderList
+    OrderList,
+    IntoCar
 }

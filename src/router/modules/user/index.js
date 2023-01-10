@@ -21,7 +21,7 @@ const UserRouter = new Router({
 })
 
 // 微信登录
-UserRouter.post("/Login",wxLogin)
+UserRouter.post("/wxlogin",wxLogin)
 
 // 获取所有的用户
 UserRouter.get("/getAllUsers", isAdmin, getAllUser)

@@ -5,9 +5,8 @@ const { PRIVATE_KEY } = require('@config/const')
 const isAuth = async (ctx, next) => {
   // 获取token
   const authorization = ctx.headers.authorization
-  const token = authorization?.replace('Bearer ', '')
   try {
-    const result = jwt.verify(token, PRIVATE_KEY)
+    const result = jwt.verify(authorization, PRIVATE_KEY)
     ctx.user = result
     try {
       await next()
@@ -21,6 +20,7 @@ const isAuth = async (ctx, next) => {
     ctx.body = {
       status: 403,
       message: 'isAuth:token验证失败',
+      msg:error
     }
   }
 }

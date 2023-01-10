@@ -11,7 +11,7 @@ const isPhoneNumber = require('@utils/isPhoneNumber')
 const isCorrectPassword = require('@utils/isCorrectPassword')
 const deletFile = require('@utils/deletFile')
 
-const { APP_HOST, APP_PORT, AVATAR_PATH } = require('@config/const')
+const { APP_HOST, AVATAR_PATH } = require('@config/const')
 
 
 // 获取所有用户,管理员才能获取
@@ -260,6 +260,7 @@ const getSingeAvatar = (ctx, next) => {
   ctx.body = fs.createReadStream(`${AVATAR_PATH}/${filename}`)
 }
 
+// 微信登录
 const wxLogin = async ctx => {
   const { phoneCode, openidCode } = ctx.request.body
   const OpenIdResult = await axios.get(`
