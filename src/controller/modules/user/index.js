@@ -4,7 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const axios = require('axios')
 
-const { PRIVATE_KEY, EXPIRESIN } = require('@config/const')
+const { PRIVATE_KEY, EXPIRESIN, APP_ID, SECRET } = require('@config/const')
 const { query } = require('@db/index')
 const snid = require('@utils/snowflake')
 const isPhoneNumber = require('@utils/isPhoneNumber')
@@ -264,10 +264,10 @@ const getSingeAvatar = (ctx, next) => {
 const wxLogin = async ctx => {
   const { phoneCode, openidCode } = ctx.request.body
   const OpenIdResult = await axios.get(`
-  https://api.weixin.qq.com/sns/jscode2session?appid=wx8546360f9d778974&secret=2bf8796db92a215598e817ae28afc3e1&js_code=${openidCode}&grant_type=authorization_code`)
+  https://api.weixin.qq.com/sns/jscode2session?appid=${APP_ID}&secret=${SECRET}&js_code=${openidCode}&grant_type=authorization_code`)
 
   const AccessTokenResult = await axios.get(`
-  https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx8546360f9d778974&secret=2bf8796db92a215598e817ae28afc3e1`)
+  https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${APP_ID}&secret=${SECRET}`)
 
   const PhoneResult = await axios.post(`
   https://api.weixin.qq.com/wxa/business/getuserphonenumber?access_token=${AccessTokenResult.data.access_token}`,

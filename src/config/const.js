@@ -15,5 +15,7 @@ module.exports = {
     PRIVATE_KEY,
     EXPIRESIN,
     AccessKeyID,
-    AccessKeySecret
+    AccessKeySecret,
+    APP_ID,
+    SECRET
 } = process.env
