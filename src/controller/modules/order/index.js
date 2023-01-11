@@ -180,11 +180,29 @@ const OrderList = async ctx => {
     })
 
 }
+
+// 移除购物车
+const delCar = async ctx => {
+    const { ids } = ctx.request.body
+    const sql = "DELETE FROM shopping_car WHERE id IN (?)"
+    await query(sql,[ids]).then(res => {
+        ctx.body = {
+            status:200,
+            message:'ok'
+        }
+    }).catch(err => {
+        ctx.body = {
+            status:500,
+            message:err
+        }
+    })
+}
 module.exports = {
     createOrder,
     payOrder,
     userOrder,
     OrderList,
     IntoCar,
-    getCarOrder
+    getCarOrder,
+    delCar
 }
