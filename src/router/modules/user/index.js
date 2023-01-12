@@ -9,7 +9,9 @@ const {
     updateUserInfo,
     deleteUser,
     updateUserAvatar,
-    getSingeAvatar
+    getSingeAvatar,
+    createAdress,
+    getUserAddress
 } = require('@controller/modules/user/index')
 
 const { isAuth, isAdmin, isMe } = require('@middleware/modules/user/index')
@@ -46,5 +48,11 @@ UserRouter.get("/avatar/:filename", getSingeAvatar)
 
 // 删除用户
 UserRouter.delete("/delete", isAuth, isAdmin, deleteUser)
+
+// 新增用户收货地址
+UserRouter.post("/address", isAuth, createAdress)
+
+// 获取用户收货地址
+UserRouter.get("/address", isAuth, getUserAddress)
 
 module.exports = UserRouter

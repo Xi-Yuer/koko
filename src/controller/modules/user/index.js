@@ -328,8 +328,62 @@ const wxLogin = async ctx => {
       })
     }
   })
+}
+// 创建用户收货地址
+const createAdress = async ctx => {
+  const { addressInfo } = ctx.request.body
+  const { cityName, countyName, detailInfo, provinceName, telNumber, realName } = addressInfo
+  const user = ctx.user
+  const id = snid.generate()
+  const find = "SELECT count(*) count FROM user_address WHERE user_id = ?"
+  let sql = "INSERT INTO user_address (id,user_id,cityName, countyName, detailInfo, provinceName, telNumber, realName) VALUES (?,?,?,?,?,?,?,?)"
+  await query(find, [user.id]).then(async res => {
+    if (res[0].count > 0) {
+      sql = "UPDATE user_address SET cityName=?, countyName=?, detailInfo=?, provinceName=?, telNumber=?, realName=? WHERE user_id = ?"
+      await query(sql, [cityName, countyName, detailInfo, provinceName, telNumber, realName, user.id]).then((res => {
+        ctx.body = {
+          status: 200,
+          message: "已更新"
+        }
+      })).catch(err => {
+        ctx.body = {
+          status: 500,
+          message: err
+        }
+      })
+    }else {
+      await query(sql, [id, user.id, cityName, countyName, detailInfo, provinceName, telNumber, realName]).then(res => {
+        ctx.body = {
+          status: 200,
+          message: "新增成功"
+        }
+      }).catch(err => {
+        ctx.body = {
+          status: 500,
+          message: err
+        }
+      })
+    }
+  })
+}
 
 
+// 获取用户收货地址
+const getUserAddress = async ctx => {
+  const { id } = ctx.user
+  const sql = "SELECT * FROM user_address WHERE user_id = ?"
+  await query(sql, [id]).then(res => {
+    ctx.body = {
+      status: 200,
+      message: 'ok',
+      data: res
+    }
+  }).catch(err => {
+    ctx.body = {
+      status: 500,
+      message: err
+    }
+  })
 }
 module.exports = {
   getAllUser,
@@ -340,5 +394,7 @@ module.exports = {
   deleteUser,
   updateUserAvatar,
   getSingeAvatar,
-  wxLogin
+  wxLogin,
+  createAdress,
+  getUserAddress
 }
